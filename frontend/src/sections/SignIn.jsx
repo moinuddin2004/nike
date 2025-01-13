@@ -1,7 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+
+
 
 const SignIn = () => {
+    const navigate = useNavigate();
+    const {
+      register,
+      handleSubmit,
+      formState: { errors },
+    } = useForm();
+    const [error, setError] = useState("");
+  
+    const login = async (data) => {
+      setError("");
+      try {
+        const session = await axios.post("/api/v1/users/login", data);
+  
+          toast.success("Login successful");
+          navigate("/");
+        
+      } catch (error) {
+        setError(error.response.data.message);
+        toast.error(error.response.data.message);
+      }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-100">
             <div className="w-full max-w-md bg-white rounded-lg shadow-2xl p-10">
@@ -11,7 +39,7 @@ const SignIn = () => {
                 <p className="text-gray-600 text-center mb-8 text-lg">
                     Sign in to your account to continue.
                 </p>
-                <form>
+                <form onSubmit={handleSubmit(login)}>
                     <div className="mb-6 relative">
                         <label
                             htmlFor="email"
@@ -27,7 +55,18 @@ const SignIn = () => {
                                 placeholder="you@example.com"
                                 className="px-4 py-3 pl-12 border border-gray-300 rounded-lg w-full focus:ring-coral-red focus:border-coral-red shadow-sm"
                                 required
+                                {...register("email", {
+                                    required: "Email is required",
+                                    pattern: {
+                                      value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                                      message: "Email address must be a valid address",
+                                    }
+                                })
+                            }
                             />
+                              {errors.email && (
+                <p className="text-red-600">{errors.email.message}</p>
+              )}
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-5 w-5 absolute top-3 left-3 text-gray-400"
@@ -53,7 +92,13 @@ const SignIn = () => {
                                 placeholder="Enter your password"
                                 className="px-4 py-3 pl-12 border border-gray-300 rounded-lg w-full focus:ring-coral-red focus:border-coral-red shadow-sm"
                                 required
+                                {...register("password", {
+                                    required: "Password is required",
+                                  })}
                             />
+                              {errors.password && (
+                <p className="text-red-600">{errors.password.message}</p>
+              )}
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-5 w-5 absolute top-3 left-3 text-gray-400"
